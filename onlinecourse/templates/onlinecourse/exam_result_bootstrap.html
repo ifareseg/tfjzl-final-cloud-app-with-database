@@ -5,13 +5,15 @@
     {% load static %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
 <body>
 
- <nav class="navbar navbar-light bg-light">
+<nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
         <div class="navbar-header">
-              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+            <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
         </div>
+
         <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
             <li>
@@ -23,8 +25,8 @@
                 <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
                     {% csrf_token %}
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Username" name="username" >
-                        <input type="password" class="form-control" placeholder="Username" name="psw" >
+                        <input type="text" class="form-control" placeholder="Username" name="username">
+                        <input type="password" class="form-control" placeholder="Password" name="psw">
                         <button class="btn btn-primary" type="submit">Login</button>
                         <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
                     </div>
@@ -35,21 +37,64 @@
     </div>
 </nav>
 
-<div class="container-fluid">
+<div class="container-fluid mt-3">
+
     {% if grade > 80 %}
     <div class="alert alert-success">
-       <!--HINT Display passed info -->
+        <h4>Congratulations, {{ user.first_name }}!</h4>
+        <p>You have passed the exam.</p>
+        <p>Your score is: <strong>{{ grade }}</strong></p>
     </div>
-        {% else %}
-        <div class="alert alert-danger">
-            <!--HINT Display failed info -->
-        </div>
-        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
-        {% endif %}
-        <div class="card-columns-vertical mt-1">
-        <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
-        </div>
+    {% else %}
+    <div class="alert alert-danger">
+        <h4>Failed</h4>
+        <p>You did not pass the exam.</p>
+        <p>Your score is: <strong>{{ grade }}</strong></p>
     </div>
+    <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">
+        Re-test
+    </a>
+    {% endif %}
+
+    <div class="card-columns-vertical mt-3">
+        <h5>Exam results</h5>
+
+        {% for result in question_results %}
+        <div class="card mt-2">
+            <div class="card-header">
+                <h5>{{ result.question.content }}</h5>
+            </div>
+
+            <div class="card-body">
+                {% if result.is_correct %}
+                <p class="text-success">Correct</p>
+                {% else %}
+                <p class="text-danger">Incorrect</p>
+                {% endif %}
+
+                <p><strong>Choices:</strong></p>
+
+                {% for choice in result.choices %}
+                    {% if choice.is_correct %}
+                        <p class="text-success">
+                            ✅ {{ choice.content }}
+                        </p>
+                    {% elif choice in result.selected_choices %}
+                        <p class="text-danger">
+                            ❌ {{ choice.content }}
+                        </p>
+                    {% else %}
+                        <p>
+                            {{ choice.content }}
+                        </p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
 </body>
 </html>
